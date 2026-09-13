@@ -222,7 +222,9 @@ with tab1:
         type=[
             "xlsx",
             "csv",
-            "txt"
+            "txt",
+            "pdf",
+            "docx"
         ]
     )
 
