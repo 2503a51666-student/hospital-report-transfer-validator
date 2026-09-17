@@ -106,9 +106,25 @@ default_generator = generators[algorithm]
 # EDITABLE GENERATOR POLYNOMIAL
 # =========================================================
 
+# The generator polynomial always has CRC length + 1 bits.
+# The user can edit the digits, but cannot change the
+# required number of digits for the selected CRC.
+
+crc_lengths = {
+    "CRC-4": 4,
+    "CRC-8": 8,
+    "CRC-16": 16,
+    "CRC-32": 32
+}
+
+required_crc_length = crc_lengths[algorithm]
+required_generator_length = required_crc_length + 1
+
 generator = st.sidebar.text_input(
-    "Generator Polynomial",
-    value=default_generator
+    f"Generator Polynomial ({required_generator_length} digits)",
+    value=default_generator,
+    max_chars=required_generator_length,
+    key=f"generator_{algorithm}"
 )
 
 
@@ -121,8 +137,9 @@ valid_generator = True
 
 if generator == "":
 
-    st.sidebar.warning(
-        "Enter a generator polynomial."
+    st.sidebar.info(
+        f"Please enter a {required_generator_length}-digit "
+        f"binary generator polynomial for {algorithm}."
     )
 
     valid_generator = False
@@ -130,8 +147,18 @@ if generator == "":
 
 elif any(bit not in "01" for bit in generator):
 
-    st.sidebar.error(
-        "Generator must contain only 0 and 1."
+    st.sidebar.info(
+        "Generator polynomial must contain only 0 and 1."
+    )
+
+    valid_generator = False
+
+
+elif len(generator) != required_generator_length:
+
+    st.sidebar.info(
+        f"Generator polynomial must be exactly "
+        f"{required_generator_length} digits for {algorithm}."
     )
 
     valid_generator = False
@@ -139,17 +166,8 @@ elif any(bit not in "01" for bit in generator):
 
 elif generator[0] != "1":
 
-    st.sidebar.warning(
-        "Generator should start with 1."
-    )
-
-    valid_generator = False
-
-
-elif len(generator) < 2:
-
-    st.sidebar.warning(
-        "Generator must contain at least 2 bits."
+    st.sidebar.info(
+        "Generator polynomial should start with 1."
     )
 
     valid_generator = False
@@ -166,19 +184,20 @@ else:
 # POLYNOMIAL INFORMATION
 # =========================================================
 
-if valid_generator:
+st.sidebar.write(
+    f"Required generator length: "
+    f"**{required_generator_length} digits**"
+)
 
-    crc_length = len(generator) - 1
-
-    st.sidebar.write(
-        f"CRC length: **{crc_length} bits**"
-    )
+st.sidebar.write(
+    f"CRC length: **{required_crc_length} bits**"
+)
 
 
 st.sidebar.info(
     "The generator polynomial is editable. "
-    "You can enter your own polynomial to verify "
-    "answers from CRC questions."
+    "You can change the digits, but the number of "
+    "digits is fixed by the selected CRC type."
 )
 
 
